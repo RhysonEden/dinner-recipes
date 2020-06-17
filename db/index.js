@@ -55,24 +55,27 @@ async function getAllUsers() {
   return rows;
 }
 
-async function updatePost(postId, fields = {}) {
+async function updateRecipe(recipeId, fields = {}) {
+  console.log("59 is running");
   const setString = Object.keys(fields)
     .map((key, index) => `"${key}"=$${index + 1}`)
     .join(", ");
 
   try {
+    console.log("65 is running");
     if (setString.length > 0) {
       await client.query(
         `
-        UPDATE posts
+        UPDATE recipes
         SET ${setString}
-        WHERE id=${postId}
+        WHERE id=${recipeId}
         RETURNING *;
       `,
         Object.values(fields)
       );
     }
   } catch (error) {
+    console.log(error);
     throw error;
   }
 }
@@ -84,7 +87,7 @@ async function getRecipesById(postId) {
     } = await client.query(
       `
       SELECT *
-      FROM posts
+      FROM recipes
       WHERE id=$1;
     `,
       [postId]
@@ -115,38 +118,35 @@ async function getRecipesById(postId) {
 
 async function getRecipesByUser(userId) {
   try {
-    const { rows: postIds } = client.query(`
+    const { rows: postIds } = await client.query(`
       SELECT id
       FROM recipes
       WHERE "authorId"=${userId};
     `);
 
-    console.log("Are they there?:", postIds);
     const recipes = await Promise.all(
       postIds.map((post) => getRecipesById(post.id))
     );
 
     return recipes;
   } catch (error) {
-    console.log("Recipe by ID error:", error);
+    console.log("131 Recipe by ID error:", error);
     throw error;
   }
 }
 
 async function getAllRecipes() {
   try {
-    const { rows: id } = await client.query(`
+    const { rows } = await client.query(`
       SELECT *
       FROM recipes;
     `);
-    console.log("Line 142", { rows: id });
     const recipes = await Promise.all(
       rows.map((recipe) => getRecipesByUser(recipe.id))
     );
-    console.log("Line 145", recipes);
     return recipes;
   } catch (error) {
-    console.log("this is the error:", error);
+    console.log("149 this is the error:", error);
     throw error;
   }
 }
@@ -177,4 +177,6 @@ module.exports = {
   createRecipe,
   getAllRecipes,
   getRecipesById,
+  updateRecipe,
+  getRecipesByUser,
 };

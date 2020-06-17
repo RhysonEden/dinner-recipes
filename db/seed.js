@@ -6,6 +6,8 @@ const {
   createRecipe,
   getAllRecipes,
   getRecipesById,
+  updateRecipe,
+  getRecipesByUser,
 } = require("./index");
 
 async function dropTables() {
@@ -88,7 +90,13 @@ async function createInitialRecipes() {
       content:
         "This is my first post. I hope I love writing blogs as much as I love writing them.",
     });
-
+    await createRecipe({
+      authorId: katy.id,
+      title: "Second Recipe",
+      ingredients: "None again, this is a test",
+      content:
+        "This is my second post. I hope I love writing blogs as much as I love writing them.",
+    });
     // a couple more
   } catch (error) {
     throw error;
@@ -126,6 +134,15 @@ async function testDB() {
     console.log("Calling getAllRecipes");
     const recipes = await getAllRecipes();
     console.log("Result:", recipes);
+
+    console.log("Calling updateRecipe on posts[1]");
+    const updateRecipes = await updateRecipe(recipes[1].id, {
+      title: "First REcipe",
+      ingredients: "None This is a test",
+      content: "This is an update to my recipe",
+      active: "true",
+    });
+    console.log("136 Result:", updateRecipes);
 
     console.log("Finished database tests!");
   } catch (error) {
